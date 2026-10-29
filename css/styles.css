@@ -1,0 +1,444 @@
+/* ==========================================================================
+   The Bone Wars: Field Journal, dug deeper
+   Iteration 1 skeleton. Mobile-first; see DESIGN.md for the spec.
+   ========================================================================== */
+
+/* ---------- Tokens ---------- */
+
+:root {
+  /* Named colors */
+  --parchment: #F3E9D2;
+  --paper:     #FBF5E8;
+  --ink:       #2B2118;
+  --ink-soft:  #5C4A3A;
+  --rust:      #A0522D;
+  --tan:       #C8A27A;
+  --marsh:     #2E4A6B;
+  --cope:      #8B2E2E;
+
+  /* Rock layers, surface to bedrock */
+  --layer-0: #F3E9D2;
+  --layer-1: #EDE0C2;
+  --layer-2: #E6D5B0;
+  --layer-3: #DEC89C;
+  --layer-4: #D2B68A;
+  --layer-5: #C4A078;
+  --layer-6: #7A5A3E;
+  --layer-7: #5E4530;
+  --layer-8: #3F2E21;
+  --layer-9: #2B2118;
+
+  /* Type */
+  --font-display: "Abril Fatface", Georgia, serif;
+  --font-body:    "Lora", Georgia, serif;
+  --font-label:   "Special Elite", "Courier New", monospace;
+
+  /* Layout */
+  --max-width: 1200px;
+  --gutter: clamp(16px, 4vw, 32px);
+  --meter-h: 5px;
+  --header-h: 72px; /* fallback; main.js writes the measured height */
+
+  /* Focus ring color; dark layers switch it to parchment */
+  --focus: var(--ink);
+}
+
+/* ---------- Base ---------- */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  html {
+    scroll-behavior: smooth;
+  }
+}
+
+body {
+  margin: 0;
+  background: var(--parchment);
+  color: var(--ink);
+  font-family: var(--font-body);
+  font-size: 1.0625rem; /* 17px */
+  line-height: 1.6;
+}
+
+h1,
+h2 {
+  font-family: var(--font-display);
+  font-weight: 400; /* Abril Fatface has one weight; avoid faux bold */
+}
+
+img {
+  display: block;
+  max-width: 100%;
+  height: auto;
+}
+
+:focus-visible {
+  outline: 3px solid var(--focus);
+  outline-offset: 3px;
+}
+
+/* main is only focused programmatically by the skip link */
+main:focus {
+  outline: none;
+}
+
+.container {
+  width: min(var(--max-width), 100% - 2 * var(--gutter));
+  margin-inline: auto;
+}
+
+/* ---------- Skip link ---------- */
+
+.skip-link {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  z-index: 200;
+  padding: 10px 16px;
+  background: var(--ink);
+  color: var(--parchment);
+  font-weight: 600;
+  text-decoration: none;
+  transform: translateY(-200%);
+}
+
+.skip-link:focus {
+  transform: none;
+}
+
+/* ---------- Header ---------- */
+
+.site-header {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background: var(--parchment);
+  border-bottom: 2px solid var(--ink);
+}
+
+.header-inner {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px 16px;
+  min-height: 64px;
+  padding-block: 10px;
+}
+
+.brand {
+  font-family: var(--font-display);
+  font-size: 1.5rem; /* 24px */
+  line-height: 1.2;
+  color: var(--ink);
+  text-decoration: none;
+}
+
+.nav-toggle {
+  min-height: 44px;
+  padding: 8px 12px;
+  border: 2px solid var(--ink);
+  background: transparent;
+  color: var(--ink);
+  font-family: var(--font-body);
+  font-size: 0.875rem;
+  font-weight: 600;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+
+.nav-toggle:hover {
+  background: var(--ink);
+  color: var(--parchment);
+}
+
+/* Mobile: the list drops down under the header and depth meter */
+.nav-list {
+  display: none;
+  position: absolute;
+  top: calc(100% + 2px + var(--meter-h));
+  left: 0;
+  right: 0;
+  max-height: calc(100vh - var(--header-h) - var(--meter-h));
+  overflow-y: auto;
+  margin: 0;
+  padding: 8px var(--gutter) 16px;
+  list-style: none;
+  background: var(--parchment);
+  border-bottom: 2px solid var(--ink);
+}
+
+.nav-toggle[aria-expanded="true"] + .nav-list {
+  display: block;
+}
+
+.nav-link {
+  display: block;
+  padding: 12px 0;
+  color: var(--rust);
+  font-size: 0.875rem;
+  font-weight: 600;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  text-decoration: none;
+}
+
+.nav-link:hover,
+.nav-link[aria-current="true"] {
+  color: var(--ink);
+  text-decoration: underline;
+  text-decoration-thickness: 2px;
+  text-underline-offset: 6px;
+}
+
+/* Desktop: all 9 tabs fit on one row with the brand from here up */
+@media (min-width: 1080px) {
+  .nav-toggle {
+    display: none;
+  }
+
+  .nav-list {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: 0 18px;
+    position: static;
+    max-height: none;
+    overflow: visible;
+    padding: 0;
+    background: none;
+    border: 0;
+  }
+
+  .nav-link {
+    padding: 8px 0;
+  }
+}
+
+/* Depth meter: rides under the sticky header and reveals the gradient as it grows */
+.depth-meter {
+  position: absolute;
+  top: calc(100% + 2px); /* absolute "top" starts inside the header's 2px border */
+  left: 0;
+  right: 0;
+  height: var(--meter-h);
+  background: var(--parchment);
+}
+
+.depth-meter-fill {
+  width: 0;
+  height: 100%;
+  background-image: linear-gradient(90deg, var(--layer-3), var(--layer-5), var(--layer-6), var(--layer-8), var(--layer-9));
+  background-size: 100vw 100%;
+}
+
+/* ---------- Layers ---------- */
+
+.hero,
+.section {
+  --text: var(--ink);
+  --muted: var(--ink-soft);
+  --ph-border: var(--tan);
+  background: var(--bg);
+  color: var(--text);
+}
+
+.layer-0 { --bg: var(--layer-0); --ph-border: var(--rust); }
+.layer-1 { --bg: var(--layer-1); }
+.layer-2 { --bg: var(--layer-2); }
+.layer-3 { --bg: var(--layer-3); }
+/* ink-soft drops below 4.5:1 from here down, and tan borders disappear */
+.layer-4 { --bg: var(--layer-4); --muted: var(--ink); --ph-border: var(--ink-soft); }
+.layer-5 { --bg: var(--layer-5); --muted: var(--ink); --ph-border: var(--ink-soft); }
+.layer-6 { --bg: var(--layer-6); --text: var(--parchment); --muted: var(--parchment); --focus: var(--parchment); }
+.layer-7 { --bg: var(--layer-7); --text: var(--parchment); --muted: var(--parchment); --focus: var(--parchment); }
+.layer-8 { --bg: var(--layer-8); --text: var(--parchment); --muted: var(--tan); --focus: var(--parchment); }
+.layer-9 { --bg: var(--layer-9); --text: var(--parchment); --muted: var(--tan); --focus: var(--parchment); }
+
+/* Keep section headers clear of the sticky header when jumping to them */
+main,
+main > section {
+  scroll-margin-top: calc(var(--header-h) + var(--meter-h));
+}
+
+/* ---------- Shared type ---------- */
+
+.eyebrow {
+  margin: 0 0 12px;
+  color: var(--muted);
+  font-family: var(--font-label);
+  font-size: 0.875rem; /* 14px */
+  letter-spacing: 2px;
+  text-transform: uppercase;
+}
+
+.section-title {
+  margin: 0 0 8px;
+  font-size: clamp(36px, 4vw + 20px, 48px);
+  line-height: 1.1;
+}
+
+.subtitle {
+  margin: 0;
+  color: var(--muted);
+  font-size: 1.25rem; /* 20px */
+  font-style: italic;
+}
+
+/* ---------- Hero ---------- */
+
+.hero {
+  padding-block: clamp(56px, 8vw, 96px);
+}
+
+.hero-grid {
+  display: grid;
+  gap: 40px;
+  align-items: center;
+}
+
+@media (min-width: 860px) {
+  .hero-grid {
+    grid-template-columns: 1.1fr 1fr;
+    gap: 64px;
+  }
+}
+
+.hero-title {
+  margin: 0 0 24px;
+  font-size: clamp(56px, 8vw, 104px);
+  line-height: 1;
+}
+
+.hero-lede {
+  max-width: 34ch;
+  margin: 0 0 12px;
+  font-size: 1.25rem;
+}
+
+.hero-hint {
+  max-width: 46ch;
+  margin: 0;
+  color: var(--muted);
+  font-style: italic;
+}
+
+.hero-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px 16px;
+  margin-top: 28px;
+}
+
+/* ---------- Buttons ---------- */
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 44px;
+  padding: 10px 20px;
+  border: 2px solid;
+  font-size: 0.875rem;
+  font-weight: 600;
+  letter-spacing: 1px;
+  line-height: 1.2;
+  text-transform: uppercase;
+  text-decoration: none;
+}
+
+.btn-primary {
+  border-color: var(--rust);
+  background: var(--rust);
+  color: var(--parchment);
+}
+
+.btn-outline {
+  border-color: var(--ink);
+  background: transparent;
+  color: var(--ink);
+}
+
+.btn-primary:hover,
+.btn-outline:hover {
+  border-color: var(--ink);
+  background: var(--ink);
+  color: var(--parchment);
+}
+
+/* ---------- Sections ---------- */
+
+.section {
+  padding-block: clamp(72px, 8vw, 80px);
+}
+
+/* ---------- Placeholders ---------- */
+
+.placeholder {
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  border: 2px dashed var(--ph-border);
+  color: var(--muted);
+  font-family: var(--font-label);
+  text-align: center;
+}
+
+.placeholder-image {
+  aspect-ratio: 4 / 3;
+  min-height: 240px;
+  font-size: 0.9375rem;
+}
+
+.placeholder-block {
+  margin-top: 32px;
+  /* Iteration 1 only: makes each section taller than the viewport so
+     scrolling and tab highlighting are easy to test. Remove with real content. */
+  min-height: 60vh;
+}
+
+/* ---------- Strata dividers ---------- */
+
+.strata {
+  height: 20px;
+  background: linear-gradient(180deg, var(--from) 0 30%, var(--to) 30% 45%, var(--from) 45% 60%, var(--to) 60% 100%);
+}
+
+/* ---------- Footer ---------- */
+
+.site-footer {
+  --focus: var(--parchment);
+  background: var(--layer-9);
+  color: var(--tan);
+  border-top: 1px solid color-mix(in srgb, var(--tan) 25%, transparent);
+  font-size: 0.9375rem;
+}
+
+.footer-inner {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px 24px;
+  padding-block: 28px;
+}
+
+.footer-inner p {
+  margin: 0;
+}
+
+.site-footer a {
+  color: var(--tan);
+  text-underline-offset: 3px;
+}
+
+.site-footer a:hover {
+  color: var(--parchment);
+}
